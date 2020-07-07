@@ -6,13 +6,16 @@ using Discord.WebSocket;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.DependencyInjection;
+using csharpi.Services;
 
 namespace AtlasResourceBot
 {
     class Program
     {
-        private readonly DiscordSocketClient _client;
+        // setup our fields we assign later
         private readonly IConfiguration _config;
+        private DiscordSocketClient _client;
 
         static void Main(string[] args)
         {
@@ -21,32 +24,39 @@ namespace AtlasResourceBot
 
         public Program()
         {
-            _client = new DiscordSocketClient();
-
-            //Hook into log event and write it out to the console
-            _client.Log += LogAsync;
-
-            //Hook into the client ready event
-            _client.Ready += ReadyAsync;
-
-            //Hook into the message received event, this is how we handle the hello world example
-            _client.MessageReceived += MessageReceivedAsync;
-
-            //Create the configuration
+            // create the configuration
             var _builder = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile(path: "config.json");            
+                .AddJsonFile(path: "config.json");  
+
+            // build the configuration and assign to _config          
             _config = _builder.Build();
         }
 
         public async Task MainAsync()
         {
-            //This is where we get the Token value from the configuration file
-            await _client.LoginAsync(TokenType.Bot, _config["Token"]);
-            await _client.StartAsync();
+            // call ConfigureServices to create the ServiceCollection/Provider for passing around the services
+            using (var services = ConfigureServices())
+            {
+                // get the client and assign to client 
+                // you get the services via GetRequiredService<T>
+                var client = services.GetRequiredService<DiscordSocketClient>();
+                _client = client;
 
-            // Block the program until it is closed.
-            await Task.Delay(-1);
+                // setup logging and the ready event
+                client.Log += LogAsync;
+                client.Ready += ReadyAsync;
+                services.GetRequiredService<CommandService>().Log += LogAsync;
+
+                // this is where we get the Token value from the configuration file, and start the bot
+                await client.LoginAsync(TokenType.Bot, _config["Token"]);
+                await client.StartAsync();
+
+                // we get the CommandHandler class here and call the InitializeAsync method to start things up for the CommandHandler service
+                await services.GetRequiredService<CommandHandler>().InitializeAsync();
+
+                await Task.Delay(-1);
+            }
         }
 
         private Task LogAsync(LogMessage log)
@@ -57,21 +67,23 @@ namespace AtlasResourceBot
 
         private Task ReadyAsync()
         {
-            Console.WriteLine($"Connected as -> [] :)");
+            Console.WriteLine($"Connected as -> [{_client.CurrentUser}] :)");
             return Task.CompletedTask;
         }
 
-        //I wonder if there's a better way to handle commands (spoiler: there is :))
-        private async Task MessageReceivedAsync(SocketMessage message)
+        // this method handles the ServiceCollection creation/configuration, and builds out the service provider we can call on later
+        private ServiceProvider ConfigureServices()
         {
-            //This ensures we don't loop things by responding to ourselves (as the bot)
-            if (message.Author.Id == _client.CurrentUser.Id)
-                return;
-
-            if (message.Content == ".hello")
-            {
-                await message.Channel.SendMessageAsync("world!");
-            }  
+            // this returns a ServiceProvider that is used later to call for those services
+            // we can add types we have access to here, hence adding the new using statement:
+            // using csharpi.Services;
+            // the config we build is also added, which comes in handy for setting the command prefix!
+            return new ServiceCollection()
+                .AddSingleton(_config)
+                .AddSingleton<DiscordSocketClient>()
+                .AddSingleton<CommandService>()
+                .AddSingleton<CommandHandler>()
+                .BuildServiceProvider();
         }
     }
 }
