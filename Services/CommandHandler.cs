@@ -6,8 +6,9 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
-namespace csharpi.Services
+namespace AtlasResourceBot.Services
 {
     public class CommandHandler
     {
@@ -16,6 +17,7 @@ namespace csharpi.Services
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _client;
         private readonly IServiceProvider _services;
+        private readonly Microsoft.Extensions.Logging.ILogger _logger;
 
         public CommandHandler(IServiceProvider services)
         {
@@ -24,6 +26,7 @@ namespace csharpi.Services
             _config = services.GetRequiredService<IConfiguration>();
             _commands = services.GetRequiredService<CommandService>();
             _client = services.GetRequiredService<DiscordSocketClient>();
+            _logger = services.GetRequiredService<ILogger<CommandHandler>>();
             _services = services;
             
             // take action when we execute a command
