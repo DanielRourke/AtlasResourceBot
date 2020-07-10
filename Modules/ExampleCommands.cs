@@ -24,7 +24,7 @@ namespace AtlasResourceBot.Modules
             var user = Context.User;
             
             // build out the reply
-            sb.AppendLine($"You are -> [{user.Username}]");
+            sb.AppendLine($"You are -> [<@{user.Mention}>]");
             sb.AppendLine("I must now say, World!");
 
             // send simple string reply

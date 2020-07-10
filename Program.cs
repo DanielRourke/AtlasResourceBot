@@ -68,6 +68,8 @@ namespace AtlasResourceBot
                 // we get the CommandHandler class here and call the InitializeAsync method to start things up for the CommandHandler service
                 await services.GetRequiredService<CommandHandler>().InitializeAsync();
 
+                await services.GetRequiredService<WebhookCommandHandler>().InitializeAsync();
+
                 await Task.Delay(-1);
             }
         }
@@ -96,6 +98,7 @@ namespace AtlasResourceBot
                 .AddSingleton<DiscordSocketClient>()
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandler>()
+                .AddSingleton<WebhookCommandHandler>()
                 .AddSingleton<LoggingService>()
                 .AddLogging(configure => configure.AddSerilog());
 
