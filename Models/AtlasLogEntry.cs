@@ -1,5 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
+using System.Globalization;
+using System.Collections.Generic;
 
 namespace AtlasResourceBot.Modles
 {
@@ -8,184 +10,224 @@ namespace AtlasResourceBot.Modles
         public DateTime RecivedTime { get; }
         public int GameDay { get; }
         public DateTime GameTime { get; }
-        public string attacker { get; }
-        public string victim { get; }
         public char gridReferenceLetter { get; }
         public int gridReferenceNumber { get; }
-        public float Longitude  { get ;}
-        public float Latitude { get; }
-        public string Type { get; }
+        public double longitude  { get ;}
+        public double latitude { get; }
+
+        
+        public string verb { get; }
+        public Entity entityA{ get; }
+        public Entity entityB { get; }
+
+        //dont know how to make this into simlar to macro in c#
+        private string rgx(string s) => $@"(?<{s}>([^()' ]*\s)*[^()' ]*)";
 
         public AtlasLogEntry(string entry)
         {
 
+           // Set log pattern matching types
+           //TODO move to func ? 
+            Dictionary<string, Regex> patterns = createPatterns();
+                
 
-            const string gametime = @"Day (?<day>\d{1,4}), (?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2}):";
-            const string detail = @"(?<detail>\(([^()' ]*)*(\s[^()' ]*)*\))*";
-            const string ship = @"Ship (?<ship>([^()' ]*\s)*[^()' ]*)" + detail;
-            const string item = @"(?<item>([^()' ]*\s)*[^()' ]*)" + detail;
-            const string company = @"(?<company>([^())\s]*\s)*[^())\s]*)";
-            const string rank = @"(?<rank>([^())\s]*\s)*[^())\s]*)";
-            const string victim =  @"(?<victim>([^())\s]*\s)*[^())\s]*)";
-            const string attacker =  @"(?<attacker>([^())\s]*\s)*[^())\s]*)";
-            const string level = @"Lvl (?<level>\d{1,3})" ;
-            const string grid = @"(?<grid>[A-Z]\d)";
-            const string coords = @"\[Long: (?<long>(-|)\d*\.\d*) / Lat: (?<lat>(-|)\d*\.\d*)\]";
+            foreach (var pattern in patterns)
+            {
+                Match result = pattern.Value.Match(entry);
 
+                if (result.Success)
+                {
+                    //set Recieced Time to Current time
+                    RecivedTime = DateTime.Now;
 
-            const string bed = "(?<bed>([^()' ]*\s)*[^()' ]*)";
-           
-            
+                    //set Type to of log to match dictonary key
 
-            "{gametime} Your '{item}' was destroyed!"
+                    string[] words = pattern.Key.Split(' ');
 
-            "{gametime} Your '{item}' was auto-decay destroyed at {grid} {coords}"
+                    verb = words[1];
 
-            "{gametime} Your Company killed {victim} - {level} \({company} - {rank}\)!"
-            "{gametime} Your Company killed {victim} - {level} \(Crewmember\) \({company}\)!"
-
-            "{gametime} Crew member {victim} - {level} was killed!"
-            "{gametime} Crew member {victim} - {level} was killed by {attacker} - {level} \({company}\)!"
-
-            "{gametime} Bed {bed} was removed from the Company!"
-            "{gametime} Bed {bed} was renamed to {rename}!"
-
-            "{gametime} Ship {ship} was renamed to Pop Goes Your Planks!"
-            "{gametime} {company} is stealing your {ship}! ({grid})"
-            "{gametime} Your claim of {ship} has been interrupted! ({grid})"
-
-
-
-
-    /*
-           (Day + int + Time + :)
-            Day (?<day>\d{1,}), (?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2}):
-
-            Your '(?<item>(\w*\s)*\(\w*\))' was destroyed!
-            Your 'Wood Square (Bed)' was destroyed!
-            Your 'Crafting (Bed)' was destroyed!
-            Your '{item}' was destroyed!
-
-            Your Company killed (?<company>([^())\s]*\s)*[^())\s]*) - Lvl (?<level>\d{1,3}) \((?<company>([^())\s]*\s)*[^())\s]*) - (?<rank>([^())\s]*\s)*[^())\s]*)\)!
-            Your Company killed Riga MorTuss v2 - Lvl 57 (WAKANDA - Supa Soldier)!
-            Your Company killed {victim} - {level} \({company} - {rank}\)!
-
-            Your Company killed (\w*\s)*\w* - Lvl (?<level>\d{1,3}) \(Crewmember\) \((?<company>([^())\s]*\s)*[^())\s]*)\)!
-            Your Company killed Old Joe Junior - Lvl 9 (Crewmember) (==U-M==)!
-            Your Company killed {victim} - {level} \(Crewmember\) \({company}\)!
-
-            Crew member (?<victim>([^())\s]*\s)*[^())\s]*) - Lvl (?<level>\d{1,3}) was killed!
-            Crew member {victim} - {level} was killed!
-
-            Crew member (?<victim>([^())\s]*\s)*[^())\s]*) - Lvl (?<level>\d{1,3}) was killed by (?<attacker>([^())\s]*\s)*[^())\s]*) - Lvl (?<level>\d{1,3}) \((?<company>([^())\s]*\s)*[^())\s]*)\)!
-            Crew member {victim} - {level} was killed by {attacker} - {level} \({company}\)! 
-            Crew member Finn BucketBOI - Lvl 44 was killed by ��� shire ��� - Lvl 117 (Slick Daddy Club ??? - Two-Timer)!
-
-            Bed -1129720323 was removed from the Company!
-            Bed {bed} was removed from the Company!
-
-            Bed Bed was renamed to 2ed har!
-            Bed {bed} was renamed to 2ed har!
-
-            Your '{item}' was auto-decay destroyed at {coords}
+                    //TODO fix this heaping pile into something more dynamic playerA verb ...list of (entities) .add..
+                    if(words[0].Equals("Item"))
+                    {
+                        entityA.name = result.Groups["item"].Value;
+                        entityA.type = EntityType.Item;
+                    }
+                    else if (words[0].Equals("Ship"))
+                    {
+                        entityA.name = result.Groups["ship"].Value;
+                        entityA.type = EntityType.Ship;
+                    }
+                    else if (words[0].Equals("Bed"))
+                    {
+                        entityA.name = result.Groups["bed"].Value;
+                        entityA.type = EntityType.Ship;
+                    }
+                    else if (words[0].Equals("Company"))
+                    {
+                        entityA.name = result.Groups["company"].Value;
+                        entityA.type = EntityType.Ship;
+                    }
+                    else if (words[0].Equals("Player"))
+                    {
+                        entityA.name = result.Groups["victim"].Value;
+                        entityA.type = EntityType.Player;
+                    }
+                    else if (words[0].Equals("Crewmember"))
+                    {
+                        entityA.name = result.Groups["victim"].Value;
+                        entityA.type = EntityType.Crewmember;
+                    }
+ 
+                    if(entityA.type.Equals(EntityType.Player) || entityA.type.Equals(EntityType.Crewmember))
+                    {
+                        entityA.level =  int.Parse(result.Groups["victimlevel"].Value);
+                        entityA.rank = result.Groups["victimrank"].Value;
+                        entityA.company = result.Groups["victimcompany"].Value;
+                    }
+                    
 
 
-
-    */
-
-        /*
-            prefabs
-            words (\w*\s)*\w
-            gametime Day (?<day>\d{1,}), (?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2}):
-            
-            item = name + detail
-            company "(?<company>([^())\s]*\s)*[^())\s]*)"
-            rank = "(?<rank>([^())\s]*\s)*[^())\s]*)"
-            victim =  "(?<victim>([^())\s]*\s)*[^())\s]*)"
-            attacker =  "(?<attacker>([^())\s]*\s)*[^())\s]*)"
-            level = "Lvl (?<level>\d{1,3})" 
-            bed = "(?<bed>([^()' ]*\s)*[^()' ]*)"
-            name = (?<name>([^()' ]*\s)*[^()' ]*)
-            detail = (?<detail>\(([^()' ]*)*(\s[^()' ]*)*\))*
-            grid = (?<grid>[A-Z]\d(- Lawless Region)*)
-            coords = \[Long: (?<long>(-|)\d*\.\d*) / Lat: (?<lat>(-|)\d*\.\d*)\]
-
-            Your Company destroyed Heyyyyyyyyyy (Ramshackle Sloop) (Obsidian)!
-        */
-
-
-            /*
-            Your 'Wood Square (Bed)' was destroyed!
-            Your 'Crafting (Bed)' was destroyed!
-            Your Company killed Riga MorTuss v2 - Lvl 57 (WAKANDA - Supa Soldier)!
-            Your Bawdy Sue Senior - Lvl 1 (Crewmember) was killed by ��� shire ��� - Lvl 117 (Slick Daddy Club ??? - Two-Timer) at F2 [Long: 1.31 / Lat: 77.59]!
-            Bed -1129720323 was removed from the Company!
-            Bed Bed was renamed to 2ed har!
-            Crew member Finn BucketBOI - Lvl 44 was killed by ��� shire ��� - Lvl 117 (Slick Daddy Club ??? - Two-Timer)!
-            Crew member Chile Relleno - Lvl 24 was killed!
-            */
+                    if(words[2].Equals("us"))
+                    {
+                        entityB.name = "Grease Gang";//TODO FIX hardcoding
+                        entityB.type = EntityType.Company;
+                    }
+                    else if (words[2].Equals("new"))
+                    {
+                        entityB.name = result.Groups["new"].Value;
+                        entityB.type = EntityType.Crewmember;
+                    }
+                    else if (words[2].Equals("Player"))
+                    {
+                        entityB.name = result.Groups["attacker"].Value;
+                        entityB.type = EntityType.Player;
+                    }
+                    else if (words[2].Equals("Ship"))
+                    {
+                        entityB.name = result.Groups["ship"].Value;
+                        entityB.type = EntityType.Ship;
+                    }
+                    else if (words.Length < 2)
+                    {
+                        //unknown
+                        entityB = null;
+                    }
 
 
-            /*
-            Your 'Wood Square Ceiling' was destroyed!
-            Your 'Crafting (Bed)' was destroyed!
 
-            Your Company killed Riga MorTuss v2 - Lvl 57 (WAKANDA - Supa Soldier)!
-            Your Bawdy Sue Senior - Lvl 1 (Crewmember) was killed by ��� shire ��� - Lvl 117 (Slick Daddy Club ??? - Two-Timer) at F2 [Long: 1.31 / Lat: 77.59]!
-
-            'Item type'
-            'Item type cotaining bed'
-            Company killed Name - lvl + int (Guild - Rank)
-            Name - lvl + int (Guild - Rank) at location [long: + float / lat: + float]
+                    if(entityB.type.Equals(EntityType.Player) || entityB.type.Equals(EntityType.Crewmember))
+                    {
+                        entityB.level =  int.Parse(result.Groups["attackerlevel"].Value);
+                        //entityB.rank = result.Groups["rank"].Value;
+                        entityB.company = result.Groups["attackercompany"].Value;
+                    }
 
 
-            Bed Bed was renamed to 2ed har!
-            */
+                    //Grab game day
+                    //TODO add error reporting
+                    if(result.Groups["day"].Success)
+                    {
+                        if(int.TryParse(result.Groups["day"].Value, out int day))
+                        {
+                            GameDay = day;
+                        }
+                    
+                    }
 
+                    //Grab game time
+                    //TODO add error reporting
+                    if (result.Groups["hour"].Success && result.Groups["minute"].Success &&
+                            result.Groups["second"].Success)
+                    {
+                        string time = 
+                            result.Groups["hour"].Value + 
+                            result.Groups["minute"].Value +
+                            result.Groups["second"].Value;
 
-            //Item Destroyed
-           // "^Your '(\w*\s)*\w*' was destroyed!$"
-            //Day 148, 02:56:55: Your 'Wood Square Ceiling' was destroyed!
-            
-            //guildy demolished Item
-            //Day 148, 14:16:06: Mr welsh Sheep demolished a 'Cannon' at B11 [Long: -75.19 / Lat: -88.94]!
+                        if(DateTime.TryParseExact(time, "HH:mm:ss",CultureInfo.InvariantCulture,
+                                DateTimeStyles.NoCurrentDateDefault, out DateTime datetime))
+                        {
+                            GameTime = datetime;
+                        }
+                    }
 
-            //Bed removed
-            //Day 147, 17:52:14: Bed -1129720323 was removed from the Company!
-            
-            //Bed Destroyed
-            //Day 147, 17:53:08: Your 'Crafting (Bed)' was destroyed!
+                    //Add long and lat if avaible
+                    //TODO add error reporting
+                    if(result.Groups["long"].Success)
+                    {
+                        double output = 0;
+                        if(double.TryParse(result.Groups["long"].Value, out output))
+                        {
+                            longitude = output;
+                        } 
+                    }
 
-            //bed Renamed
-            //Day 147, 17:17:17: Bed Bed was renamed to 2ed har!
+                    if(result.Groups["lat"].Success)
+                    {
+                        double output = 0;
+                        if(double.TryParse(result.Groups["lat"].Value, out output))
+                        {
+                            latitude = output;
+                        } 
+                    }
 
-            //bed added
+                    //take grid
+                    if(result.Groups["grid"].Success)
+                    {
+                        //grab first letter
+                        gridReferenceLetter = result.Groups["grid"].Value[0];
 
-            //company Killed Someone
-            //Day 148, 10:10:21: Your Company killed Riga MorTuss v2 - Lvl 57 (WAKANDA - Supa Soldier)!
+                        //take last two char as a number
+                        string str = result.Groups["grid"].Value.Substring(1);
+                        if(int.TryParse(str, out int num))
+                        {
+                            gridReferenceNumber = num;
+                        }
+                    }
+                }
+            }
 
-            //guildy Murded Someone
-            //Day 148, 10:18:25: Crew member Finn BucketBOI - Lvl 44 was killed by ��� shire ��� - Lvl 117 (Slick Daddy Club ??? - Two-Timer)!
+        }
 
-            //Crew member was Murdered By
-            //Your Bawdy Sue Senior - Lvl 1 (Crewmember) was killed by ���
-            // shire ��� - Lvl 117 (Slick Daddy Club ??? - Two-Timer) at F2 [Long: 1.31 / Lat: 77.59]!
+        private Dictionary<string, Regex> createPatterns()
+        {
+           Dictionary<string, Regex> patterns = new Dictionary<string, Regex>();
 
-            //Crew member killed by unknown
-            //Day 148, 15:11:08: Crew member Chile Relleno - Lvl 24 was killed!
+            const string rgxTime = @"Day (?<day>\d{1,4}), (?<time>\d{2}):\d{2):\d{2}):";
+            const string rgxGrid = @"(?<grid>[A-Z]\d)";
+            const string rgxCoords = @"\[Long: (?<long>(-|)\d*\.\d*) / Lat: (?<lat>(-|)\d*\.\d*)\]";
+            const string rgxDetail = @"(?<detail>\(([^()' ]*)*(\s[^()' ]*)*\))*";
+            const string rgxVictimLevel = @"Lvl (?<victimlvl>\d{1,3})" ;
+            const string rgxAttackerLevel = @"Lvl (?<attackerlvl>\d{1,3})" ;
 
-            //crew animal death
+            patterns.Add("Item destroyed us",
+                new Regex($@"{rgxTime} Your '{rgx("item") + rgxDetail}' was destroyed!"));        
+            patterns.Add("Item auto-decay us",
+                new Regex(pattern: $@"{rgxTime} Your '{rgx("item")+rgxDetail}' was auto-decay destroyed at {rgxGrid} {rgxCoords}"));
+            patterns.Add("Player Killed us",
+                new Regex(pattern: $@"{rgxTime} Your Company killed {rgx("victim")} - {rgxVictimLevel} \({rgx("victimcompany")} - {rgx("victimrank")}\)!"));
+            patterns.Add("Crewmember Killed us",
+                new Regex(pattern: $@"{rgxTime} Your Company killed {rgx("victim")} - {rgxVictimLevel} \(Crewmember\) \({rgx("company")}\)!"));
+                //TODO killed Rodrigo Bill - Lvl 28 (Shoreline Mafia)!
+            patterns.Add("Crewmember Retired us",
+                new Regex(pattern: $@"{rgxTime} Crew member {rgx("victim")} - {rgxVictimLevel} was killed!"));
+            patterns.Add("Crewmember Killed Player",
+                new Regex(pattern: $@"{rgxTime} Crew member {rgx("victim")} - {rgxVictimLevel} was killed by {rgx("attacker")} - {rgxAttackerLevel} \({rgx("attackercompany")}\)!"));
+            patterns.Add("Bed Removed us",
+                new Regex(pattern: $@"{rgxTime} Bed {rgx("bed")} was removed from the Company!"));
+            patterns.Add("Bed RenamedTo New",
+                new Regex(pattern: $@"{rgxTime} Bed {rgx("bed")} was renamed to {rgx("new")}!"));
+            patterns.Add("Ship RenamedTo New",
+                new Regex(pattern: $@"{rgxTime} Ship {rgx("ship")} was renamed to {rgx("new")}!"));
+            patterns.Add("Company Stealing Ship", //TODO sort that out
+                new Regex(pattern: $@"{rgxTime} {rgx("attackercompany")} is stealing your {rgx("ship")}! ({rgxGrid})"));
+            patterns.Add("Ship Interrupted",
+                new Regex(pattern: $@"{rgxTime} Your claim of {rgx("ship")} has been interrupted! ({rgxGrid})"));
 
-            ///tame death
+                //Day 355, 10:46:07: joejoe little brother - Lvl 26 destroyed their 'Ship Resources Box (Locked)  (R A T S)')!
 
-            //Ship destroyede
-
-            //
-
-            //Day \d{1,}, \d{2}:\d{2}:\d{2}: Your '(\w*\s)*\w*' was destroyed!
-
-          //  Day 358, 17:39:47: Your 'Wooden Chair' was destroyed!
-            //Day \d{1,}, \d{2}:\d{2}\d{2}: Your '(\w*\s)*\w*' was destroyed!
+            return patterns;  
         }
     }
+
 }

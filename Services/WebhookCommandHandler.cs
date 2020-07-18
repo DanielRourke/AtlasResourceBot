@@ -80,13 +80,14 @@ namespace AtlasResourceBot.Services
         {
             var logEntries = new List<AtlasLogEntry>();
             
+            //split the webhook message into single line strings
             string[] stringEntries = message.ToString()
                 .Split(new[]{ Environment.NewLine }, StringSplitOptions.None);
 
-            
-            for (int i = 0; i < stringEntries.Length; i++)
+            //add new entry for each line excluding the first
+            for (int i = 1; i < stringEntries.Length; i++)
             {
-                
+                logEntries.Add(new AtlasLogEntry(stringEntries[i]));
             }
             
             
