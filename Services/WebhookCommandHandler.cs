@@ -69,9 +69,6 @@ namespace AtlasResourceBot.Services
             var context = new SocketCommandContext(_client, message);
             proccessMessage(message);
             await context.Channel.SendMessageAsync($"Sorry, {context.User.Username}... REcied message proccesing <{context.User.Username}>>!");
-
-        
-    
         }
 
         public List<AtlasLogEntry> proccessMessage(SocketUserMessage message)
@@ -79,6 +76,7 @@ namespace AtlasResourceBot.Services
             var logEntries = new List<AtlasLogEntry>();
              Console.WriteLine($"calling proccess");
             //split the webhook message into single line strings
+            //TODO need to fix THIS--------------------------------------------------------
             string[] stringEntries = message.ToString()
                 .Split(new[]{ Environment.NewLine }, StringSplitOptions.None);
             Console.WriteLine($"Testi2222");
@@ -88,9 +86,10 @@ namespace AtlasResourceBot.Services
             //add new entry for each line excluding the first
             for (int i = 0; i < stringEntries.Length; i++)
             {
-                 
                 logEntries.Add(new AtlasLogEntry(stringEntries[i]));
             }
+
+            Console.WriteLine(logEntries.Count);
 
             foreach(var log in logEntries)
             {

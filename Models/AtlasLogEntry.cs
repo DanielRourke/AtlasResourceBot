@@ -38,7 +38,7 @@ namespace AtlasResourceBot.Modles
             foreach (var pattern in patterns)
             {
                 Match result = pattern.Value.Match(entry);
-                Console.WriteLine($"{pattern} \n");
+                //Console.WriteLine($"{pattern} \n");
 
                 if (result.Success)
                 {
@@ -61,7 +61,6 @@ namespace AtlasResourceBot.Modles
                     entityB = words.Length > 2 ? new Entity(result, words[2]) : null;
 
                  
-
                     //Grab game day
                     //TODO add error reporting
                     if(result.Groups["day"].Success)
@@ -153,8 +152,10 @@ namespace AtlasResourceBot.Modles
                 //TODO killed Rodrigo Bill - Lvl 28 (Shoreline Mafia)!
             patterns.Add("CrewmemberA Retired",
                 new Regex(pattern: $@"{time} Crew member {rgx("CrewmemberA")} - {levelA} was killed!"));
-            patterns.Add("CrewmemberA Killed Player",
+            patterns.Add("CrewmemberA Killed PlayerB",
                 new Regex(pattern: $@"{time} Crew member {rgx("CrewmemberA")} - {levelA} was killed by {rgx("PlayerB")} - {levelB} \({rgx("CompanyB")}\)!"));
+            patterns.Add("CrewmemberA Killed AnimalB",
+                new Regex(pattern: $@"{time} Crew member {rgx("CrewmemberA")} - {levelA} was killed by {rgx("AnimalB")} - {levelB}!"));
             patterns.Add("BedA Removed",
                 new Regex(pattern: $@"{time} Bed {rgx("BedA")} was removed from the Company!"));
             patterns.Add("BedA RenamedTo BedB",
