@@ -33,6 +33,7 @@ namespace AtlasResourceBot.Services
         
             // take action when we receive a message (so we can process it, and see if it is a valid command)
             _client.MessageReceived += MessageReceivedAsync;
+            
         }
 
         public async Task InitializeAsync()
@@ -52,42 +53,48 @@ namespace AtlasResourceBot.Services
                 return;
             }
 
+            Console.WriteLine(message.Source.ToString());
+            Console.WriteLine(message.Author.ToString());
+            Console.WriteLine(message.Author.IsBot.ToString());
+            Console.WriteLine(message.Author.IsWebhook.ToString());
+            Console.WriteLine(MessageSource.User.ToString());    
+
             if (message.Source != MessageSource.Webhook) 
             {
                 Console.WriteLine("webhook returning 2");
-                Console.WriteLine(message.Source.ToString());
-                Console.WriteLine(message.Author.ToString());
-                Console.WriteLine(message.Author.IsBot.ToString());
-                Console.WriteLine(message.Author.IsWebhook.ToString());
                 return;
             }
 
-            Console.WriteLine(MessageSource.User.ToString());     
-            // if (message.Author.IsBot)
-            // {
-            //     Console.WriteLine("webhook returning");
-            // }
-
-            
 
             var context = new SocketCommandContext(_client, message);
+            proccessMessage(message);
+            await context.Channel.SendMessageAsync($"Sorry, {context.User.Username}... REcied message proccesing <{context.User.Username}>>!");
 
-            await context.Channel.SendMessageAsync($"Sorry, {context.User.Username}... something went wrong -> <{context.User.Username}>>!");
+        
     
         }
 
         public List<AtlasLogEntry> proccessMessage(SocketUserMessage message)
         {
             var logEntries = new List<AtlasLogEntry>();
-            
+             Console.WriteLine($"calling proccess");
             //split the webhook message into single line strings
             string[] stringEntries = message.ToString()
                 .Split(new[]{ Environment.NewLine }, StringSplitOptions.None);
-
+            Console.WriteLine($"Testi2222");
+            Console.WriteLine(stringEntries.Length);
+            Console.WriteLine(message.ToString());
+             Console.WriteLine(stringEntries.ToString());
             //add new entry for each line excluding the first
-            for (int i = 1; i < stringEntries.Length; i++)
+            for (int i = 0; i < stringEntries.Length; i++)
             {
+                 
                 logEntries.Add(new AtlasLogEntry(stringEntries[i]));
+            }
+
+            foreach(var log in logEntries)
+            {
+                System.Console.WriteLine(log.ToString());
             }
             
             
