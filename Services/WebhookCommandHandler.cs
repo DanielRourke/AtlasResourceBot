@@ -82,7 +82,7 @@ namespace AtlasResourceBot.Services
             Console.WriteLine($"Testi2222");
             Console.WriteLine(stringEntries.Length);
             Console.WriteLine(message.ToString());
-             Console.WriteLine(stringEntries.ToString());
+            Console.WriteLine(stringEntries.ToString());
             //add new entry for each line excluding the first
             for (int i = 0; i < stringEntries.Length; i++)
             {
@@ -98,6 +98,8 @@ namespace AtlasResourceBot.Services
             
             
             return logEntries;
+
+
         }
 
         // public async Task CommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
