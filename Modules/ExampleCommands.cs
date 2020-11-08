@@ -14,6 +14,13 @@ namespace AtlasResourceBot.Modules
     // for commands to be available, and have the Context passed to them, we must inherit ModuleBase
     public class ExampleCommands : ModuleBase
     {
+        [Command("ping")]
+        public async Task pingCommand()
+        {
+            Console.WriteLine("sending pong");
+            await ReplyAsync("Pong");
+        }
+
         [Command("hello")]
         public async Task HelloCommand()
         {

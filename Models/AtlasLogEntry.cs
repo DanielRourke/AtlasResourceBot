@@ -8,19 +8,22 @@ namespace AtlasResourceBot.Modles
 {
     public class AtlasLogEntry
     {
+
+
         public DateTime RecivedTime { get; }
         public int GameDay { get; }
         public DateTime GameTime { get; }
 
+        public string PatternKey { get; }
 
-        public Entity entityA{ get; }
-        public string action { get; }
-        public Entity entityB { get; }
+        public Entity EntityA{ get; }
+        public string Action { get; }
+        public Entity EntityB { get; }
 
-        public char gridReferenceLetter { get; }
-        public int gridReferenceNumber { get; }
-        public double longitude  { get ;}
-        public double latitude { get; }
+        public char GridReferenceLetter { get; }
+        public int GridReferenceNumber { get; }
+        public double Longitude  { get ;}
+        public double Latitude { get; }
         
         public override string ToString() => JsonSerializer.Serialize<AtlasLogEntry>(this);
         //dont know how to make this into simlar to macro in c#
@@ -40,11 +43,13 @@ namespace AtlasResourceBot.Modles
                 Match result = pattern.Value.Match(entry);
                 //Console.WriteLine($"{pattern} \n");
 
+                PatternKey = pattern.Key.ToString();
+
                 if (result.Success)
                 {
 
                     Console.WriteLine("success");
-                   
+
                     foundMatch = true;
                     //set Recieced Time to Current time
                     RecivedTime = DateTime.Now;
@@ -53,31 +58,31 @@ namespace AtlasResourceBot.Modles
                     string[] words = pattern.Key.Split(' ');
 
                     //TODO error checking
-                    entityA = new Entity(result, words[0]);
+                    EntityA = new Entity(result, words[0]);
 
-                    action = words[1];
+                    Action = words[1];
 
                     //add entity if exists
-                    entityB = words.Length > 2 ? new Entity(result, words[2]) : null;
+                    EntityB = words.Length > 2 ? new Entity(result, words[2]) : null;
 
-                 
+
                     //Grab game day
                     //TODO add error reporting
-                    if(result.Groups["day"].Success)
+                    if (result.Groups["day"].Success)
                     {
-                        if(int.TryParse(result.Groups["day"].Value, out int day))
+                        if (int.TryParse(result.Groups["day"].Value, out int day))
                         {
                             GameDay = day;
                         }
-                    
+
                     }
 
                     //Grab game time
                     //TODO add error reporting
                     if (result.Groups.TryGetValue("time", out var outTime))
-                    {   
+                    {
 
-                        if(DateTime.TryParseExact(outTime.Value, "HH:mm:ss",CultureInfo.InvariantCulture,
+                        if (DateTime.TryParseExact(outTime.Value, "HH:mm:ss", CultureInfo.InvariantCulture,
                                 DateTimeStyles.NoCurrentDateDefault, out DateTime outDatetime))
                         {
                             GameTime = outDatetime;
@@ -86,44 +91,45 @@ namespace AtlasResourceBot.Modles
 
                     //Add long and lat if avaible
                     //TODO add error reporting
-                    if(result.Groups["long"].Success)
+                    if (result.Groups["long"].Success)
                     {
                         double output = 0;
-                        if(double.TryParse(result.Groups["long"].Value, out output))
+                        if (double.TryParse(result.Groups["long"].Value, out output))
                         {
-                            longitude = output;
-                        } 
+                            Longitude = output;
+                        }
                     }
 
-                    if(result.Groups["lat"].Success)
+                    if (result.Groups["lat"].Success)
                     {
                         double output = 0;
-                        if(double.TryParse(result.Groups["lat"].Value, out output))
+                        if (double.TryParse(result.Groups["lat"].Value, out output))
                         {
-                            latitude = output;
-                        } 
+                            Latitude = output;
+                        }
                     }
 
                     //take grid
-                    if(result.Groups["grid"].Success)
+                    if (result.Groups["grid"].Success)
                     {
                         //grab first letter
-                        gridReferenceLetter = result.Groups["grid"].Value[0];
+                        GridReferenceLetter = result.Groups["grid"].Value[0];
 
                         //take last two char as a number
                         string str = result.Groups["grid"].Value.Substring(1);
-                        if(int.TryParse(str, out int num))
+                        if (int.TryParse(str, out int num))
                         {
-                            gridReferenceNumber = num;
+                            GridReferenceNumber = num;
                         }
                     }
+                    //if succes 
+                    break;
                 }
-
             }
 
             if(!foundMatch)
             {
-                Console.WriteLine("Entry not found" + entry);
+                Console.WriteLine("Entry not found \n" );
             }
 
         }

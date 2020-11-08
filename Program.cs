@@ -22,11 +22,13 @@ namespace AtlasResourceBot
 
         static void Main(string[] args = null)
         {
-        
-            if (args.Count() != 0)
-            {
-                _logLevel = args[0];
-            } 
+
+            //if (args.Count() != 0)
+            //{
+            //    _logLevel = args[0];
+            //} 
+            _logLevel = "trace";
+
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.File("logs/AtlasResourceBot.log", rollingInterval: RollingInterval.Day)
                 .WriteTo.Console()
@@ -45,6 +47,12 @@ namespace AtlasResourceBot
             _config = _builder.Build();
         }
 
+        ~Program()
+        {
+            //_client.LogoutAsync();
+            //_client.StopAsync();
+        }
+
         public async Task MainAsync()
         {
             // call ConfigureServices to create the ServiceCollection/Provider for passing around the services
@@ -54,17 +62,22 @@ namespace AtlasResourceBot
                 // you get the services via GetRequiredService<T>
                 var client = services.GetRequiredService<DiscordSocketClient>();
                 _client = client;
+                
 
                 // setup logging and the ready event
-                // client.Log += LogAsync;
-                // client.Ready += ReadyAsync;
-                // services.GetRequiredService<CommandService>().Log += LogAsync;
+                //client.Log += LogAsync;
+                //client.Ready += ReadyAsync;
+                //services.GetRequiredService<CommandService>().Log += LogAsync;
+
+
                 services.GetRequiredService<LoggingService>();
 
                 // this is where we get the Token value from the configuration file, and start the bot
                 await client.LoginAsync(TokenType.Bot, _config["Token"]);
                 await client.StartAsync();
 
+               
+                await client.DownloadUsersAsync(client.Guilds);
                 // we get the CommandHandler class here and call the InitializeAsync method to start things up for the CommandHandler service
                 await services.GetRequiredService<CommandHandler>().InitializeAsync();
 
@@ -120,8 +133,13 @@ namespace AtlasResourceBot
                         {
                             services.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Debug);
                             break;
-                        } 
-                        default: 
+                        }
+                        case "trace":
+                        {
+                            services.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Trace);
+                            break;
+                        }
+                    default: 
                         {
                             services.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Error);
                             break;

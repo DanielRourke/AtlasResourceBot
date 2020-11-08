@@ -27,13 +27,14 @@ namespace AtlasResourceBot.Services
             _discord.Ready += OnReadyAsync;
             _discord.Log += OnLogAsync;
             _commands.Log += OnLogAsync;
+
         }
 
         // this method executes on the bot being connected/ready
         public Task OnReadyAsync()
         {
             _logger.LogInformation($": Connected as -> [{_discord.CurrentUser.ToString()}] :)");
-           // _logger.LogInformation($"We are on [1] servers");
+         //   _logger.LogInformation($"We are on [1] servers");
             return Task.CompletedTask;
         }
 

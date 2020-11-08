@@ -46,43 +46,81 @@ namespace AtlasResourceBot.Services
         public async Task MessageReceivedAsync(SocketMessage rawMessage)
         {
 
-            // ensures we don't process system/other bot messages
-            if (!(rawMessage is SocketUserMessage message)) 
+
+
+
+            //// ensures we don't process system/other bot messages
+            if (!(rawMessage is SocketUserMessage message))
             {
                 Console.WriteLine("webhook returning 1");
                 return;
             }
 
-            Console.WriteLine(message.Source.ToString());
-            Console.WriteLine(message.Author.ToString());
-            Console.WriteLine(message.Author.IsBot.ToString());
-            Console.WriteLine(message.Author.IsWebhook.ToString());
-            Console.WriteLine(MessageSource.User.ToString());    
-
-            if (message.Source != MessageSource.Webhook) 
-            {
-                Console.WriteLine("webhook returning 2");
-                return;
-            }
+            //Console.WriteLine(message.Source.ToString());
+            //Console.WriteLine(message.Author.ToString());
+            //Console.WriteLine(message.Author.IsBot.ToString());
+            //Console.WriteLine(message.Author.IsWebhook.ToString());
+            //Console.WriteLine(MessageSource.User.ToString());
 
 
             var context = new SocketCommandContext(_client, message);
-            proccessMessage(message);
-            await context.Channel.SendMessageAsync($"Sorry, {context.User.Username}... REcied message proccesing <{context.User.Username}>>!");
+
+
+
+
+            if (message.Source != MessageSource.Webhook)
+            {
+                Console.WriteLine("webhook returning 2");
+
+
+                //SocketUser user = _client.GetUser("BigusRedus", " ");
+                //if (user != null)
+                //{
+                //    await context.Channel.SendMessageAsync($"Hey! <{message.Author.Mention}>>!");
+                //}
+
+                if (message.Author.ToString() == "BigusRedus#2029")
+                {
+                    await context.Channel.SendMessageAsync($"Hey! <{message.Author.Mention}>>!");
+                }
+                else
+                {
+                    return;
+                }
+
+
+               // return;
+            }
+
+
+
+
+            List<AtlasLogEntry> entries = proccessMessage(rawMessage.Content);
+
+         //   await message.DeleteAsync();
+        //    await message.ModifyAsync(m => { m.Content = "message recieced and proccesed"; });
+           // Console.WriteLine($"Message proccesssed");
+
+            await context.Channel.SendMessageAsync($"{context.User.Username}... REcied message proccesing <{context.User.Username}>>!");
         }
 
-        public List<AtlasLogEntry> proccessMessage(SocketUserMessage message)
+        public List<AtlasLogEntry> proccessMessage(string message)
         {
             var logEntries = new List<AtlasLogEntry>();
-             Console.WriteLine($"calling proccess");
+             Console.WriteLine($"Begining  proccess");
             //split the webhook message into single line strings
             //TODO need to fix THIS--------------------------------------------------------
             string[] stringEntries = message.ToString()
-                .Split(new[]{ Environment.NewLine }, StringSplitOptions.None);
-            Console.WriteLine($"Testi2222");
+             .Split(new[]{ Environment.NewLine }, StringSplitOptions.None);
+
+            stringEntries = System.Text.RegularExpressions.Regex.Split(message.ToString(), "\n");
+
+
+            //     string[] stringEntries = System.Text.RegularExpressions.Regex.Split(message.ToString(), "\r\n");
+            // Console.WriteLine($"Testi2222");
             Console.WriteLine(stringEntries.Length);
-            Console.WriteLine(message.ToString());
-            Console.WriteLine(stringEntries.ToString());
+           // Console.WriteLine(message.ToString());
+            //Console.WriteLine(stringEntries.ToString());
             //add new entry for each line excluding the first
             for (int i = 0; i < stringEntries.Length; i++)
             {

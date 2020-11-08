@@ -72,17 +72,19 @@ namespace AtlasResourceBot.Services
 
 
             var context = new SocketCommandContext(_client, message);
-            await context.Channel.SendMessageAsync($"Sorry, {context.User.Username}... something went wrong -> <@{message.Author.Mention}>>!");
+
             
 
             //TODO :use guild and get users async and test name against names in message
-            //DownloadUsersAsync();
+           // DownloadUsersAsync();
 
-            SocketUser user = _client.GetUser("Danky", " ");
-            if (user != null)
-            {
-                await context.Channel.SendMessageAsync($"Hey! <{message.Author.Mention}>>!");
-            }
+            //SocketUser user = _client.GetUser("Danky", " ");
+            //if (user != null)
+            //{
+            //    await context.Channel.SendMessageAsync($"Hey! <{message.Author.Mention}>>!");
+            //}
+
+
             // execute command if one is found that matches
             await _commands.ExecuteAsync(context, argPos, _services); 
         }
@@ -93,6 +95,7 @@ namespace AtlasResourceBot.Services
             if (!command.IsSpecified)
             {
                 System.Console.WriteLine($"Command failed to execute for [{context.User.Username}] <-> [{result.ErrorReason}]!");
+                await context.Channel.SendMessageAsync($"Sorry, {context.User.Username}... {context.Message} is not a valid command ");
                 return;
             }
                 
