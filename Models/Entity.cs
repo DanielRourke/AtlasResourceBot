@@ -10,7 +10,9 @@ namespace AtlasResourceBot.Modles
         Item,
         Ship,
         Animal,
-        Company    
+        Company,
+        Bed,
+        Unknown
     }
     public class Entity
     {
@@ -48,7 +50,7 @@ namespace AtlasResourceBot.Modles
             //get level
             if(match.Groups.TryGetValue("Level"+side, out var outLevel))
             {
-                Console.WriteLine("Found Value");
+                Console.WriteLine("Found Level");
                 //TODO add eception
                 if(int.TryParse(outLevel.Value, out int i))
                 {
@@ -60,22 +62,24 @@ namespace AtlasResourceBot.Modles
                 Console.WriteLine("could not get value level");
             }
 
-            //get rank
-            if(match.Groups.TryGetValue("Rank"+side, out var outRank))
-            {
-                Console.WriteLine("Found Value");
-                rank = outRank.Value;
-            }
-            else
-            {
-                Console.WriteLine("could not get value rank");
-            }
 
             //get company
             if(match.Groups.TryGetValue("Company"+side, out var outCompany))
             {
                 Console.WriteLine("Found Value");
                 rank = outCompany.Value;
+            }
+            else
+            {
+                Console.WriteLine("could not get Company rank");
+            }
+
+
+            //get rank
+            if (match.Groups.TryGetValue("Rank" + side, out var outRank))
+            {
+                Console.WriteLine("Found Rank");
+                rank = outRank.Value;
             }
             else
             {

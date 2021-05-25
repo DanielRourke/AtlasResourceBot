@@ -70,21 +70,12 @@ namespace AtlasResourceBot.Services
 
             if (message.Source != MessageSource.Webhook)
             {
-                Console.WriteLine("webhook returning 2");
 
+                //if its no me testing
 
-                //SocketUser user = _client.GetUser("BigusRedus", " ");
-                //if (user != null)
-                //{
-                //    await context.Channel.SendMessageAsync($"Hey! <{message.Author.Mention}>>!");
-                //}
-
-                if (message.Author.ToString() == "BigusRedus#2029")
+                if (message.Author.ToString() != "BigusRedus#2029" || message.Channel.Id != 774132302899838976)
                 {
-                    await context.Channel.SendMessageAsync($"Hey! <{message.Author.Mention}>>!");
-                }
-                else
-                {
+                    Console.WriteLine("webhook returning 2");
                     return;
                 }
 
